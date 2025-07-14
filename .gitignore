@@ -47,3 +47,6 @@ yarn.lock
 
 # Ignore GitHub workflow logs
 .github/workflows/*.log 
+
+.test-extensions
+.vscode-tests

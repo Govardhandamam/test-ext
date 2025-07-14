@@ -1,8 +1,15 @@
 {
   "name": "test-ext",
   "displayName": "test-ext",
-  "description": "",
+  "description": "Sample extension for testing e2e tests",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Damam"
+  },
+  "repository": {},
   "version": "0.0.1",
+  "type": "module",
   "engines": {
     "vscode": "^1.98.0"
   },
@@ -17,7 +24,25 @@
         "command": "test-ext.helloWorld",
         "title": "Hello World"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "testExtSidebar",
+          "title": "Test Ext Sidebar",
+          "icon": "$(beaker)"
+        }
+      ]
+    },
+    "views": {
+      "testExtSidebar": [
+        {
+          "type": "webview",
+          "id": "test-ext.simpleSidebar",
+          "name": "Simple Webview"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -25,9 +50,10 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "npm run compile && node ./out/test/runTest.js"
+    "ui-test": "extest setup-and-run './out/ui-test/*.test.js' -s ./.vscode-tests -c max -e .test-extensions"
   },
   "devDependencies": {
+    "@types/chai": "^5.2.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.19.4",
     "@types/vscode": "^1.98.0",
@@ -35,8 +61,10 @@
     "@typescript-eslint/parser": "^8.28.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
+    "chai": "^4.3.10",
     "eslint": "^9.23.0",
     "mocha": "^11.7.1",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vscode-extension-tester": "^8.16.2"
   }
 }

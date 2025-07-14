@@ -2,6 +2,66 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
+class SimpleSidebarProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = "test-ext.simpleSidebar";
+  private _view?: vscode.WebviewView;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {}
+
+  resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken
+  ) {
+    this._view = webviewView;
+    webviewView.webview.options = {
+      enableScripts: true,
+    };
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
+
+    // Listen for messages from the webview
+    webviewView.webview.onDidReceiveMessage((message) => {
+      if (message.command === "submit") {
+        vscode.window.showInformationMessage(
+          `Message from webview -> ${message.text}`
+        );
+      }
+    });
+  }
+
+  private getHtmlForWebview(webview: vscode.Webview): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Simple Sidebar</title>
+        <style>
+          body { font-family: sans-serif; padding: 16px; }
+          input[type='text'] { width: 80%; padding: 4px; }
+          button { margin-left: 8px; }
+        </style>
+      </head>
+      <body>
+        <form id="myForm">
+          <input type="text" id="myInput" data-testid="webview-input" placeholder="Type something..." />
+          <button type="submit" data-testid="webview-submit">Submit</button>
+        </form>
+        <script>
+          const vscode = acquireVsCodeApi();
+          document.getElementById('myForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const value = document.getElementById('myInput').value;
+            vscode.postMessage({ command: 'submit', text: value });
+          });
+        </script>
+      </body>
+      </html>
+    `;
+  }
+}
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -24,6 +84,12 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(disposable);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      SimpleSidebarProvider.viewType,
+      new SimpleSidebarProvider(context.extensionUri)
+    )
+  );
 }
 
 // This method is called when your extension is deactivated

@@ -1,25 +1,66 @@
 import { expect } from "chai";
-import { ActivityBar, By, VSBrowser, WebDriver } from "vscode-extension-tester";
+import { ActivityBar, By, VSBrowser, WebDriver, Workbench, WebviewView } from "vscode-extension-tester";
+
+const BASELINE = 15_000;
+
+const DEFAULT_TIMEOUT = {
+  XS: BASELINE * 0.2,
+  SM: BASELINE * 0.5,
+  MD: BASELINE,
+  XL: BASELINE * 5,
+};
+
 
 describe("Simple Webview UI Test", function () {
   this.timeout(60000);
   let driver: WebDriver;
   before(async function () {
-    const activityBar = new ActivityBar();
-    const viewControl = await activityBar.getViewControl("Test Ext Sidebar");
-    if (!viewControl) {
-      throw new Error("Could not find Test Ext in ActivityBar");
-    }
-    await viewControl.openView();
+    // const activityBar = new ActivityBar();
+    // const viewControl = await activityBar.getViewControl("Test Ext Sidebar");
+    // if (!viewControl) {
+    //   throw new Error("Could not find Test Ext in ActivityBar");
+    // }
+    // await viewControl.openView();
     driver = VSBrowser.instance.driver;
-    const mainWebviewFrame = await driver.findElement(
-      By.css("iframe.webview.ready")
+    workbench = new Workbench();
+    await driver.wait(
+      async () => {
+        const activityBar = new ActivityBar();
+        const viewControl = await activityBar.getViewControl('Test Ext Sidebar');
+        if (!viewControl) {
+          return false;
+        }
+        await viewControl.openView();
+        return true;
+      },
+      DEFAULT_TIMEOUT.MD,
+      'Could not find Test Ext Sidebar in ActivityBar',
     );
-    await driver.switchTo().frame(mainWebviewFrame);
-    const innerFrame = await driver.findElement(
-      By.css('iframe[title="Simple Webview"]')
+
+    // Wait for the webview content to be ready
+    await driver.wait(
+      async () => {
+        try {
+          view = new WebviewView();
+          await view.switchToFrame();
+          console.log('view HTML', await driver.getPageSource());
+          const elements = await driver.findElements(By.css('.app-container'));
+          return elements.length > 0;
+        } catch (_) {
+          return false;
+        }
+      },
+      DEFAULT_TIMEOUT.MD,
+      'Webview content did not load in time',
     );
-    await driver.switchTo().frame(innerFrame);
+    // const mainWebviewFrame = await driver.findElement(
+    //   By.css("iframe.webview.ready")
+    // );
+    // await driver.switchTo().frame(mainWebviewFrame);
+    // const innerFrame = await driver.findElement(
+    //   By.css('iframe[title="Simple Webview"]')
+    // );
+    // await driver.switchTo().frame(innerFrame);
     console.log("innerFrame switching done");
     // console.log("before switching to frame");
     // console.log("opening side bar");

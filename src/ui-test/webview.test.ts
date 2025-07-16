@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ActivityBar, By, VSBrowser, WebDriver, Workbench, WebviewView } from "vscode-extension-tester";
+import { ActivityBar, By, VSBrowser, WebDriver, WebviewView } from "vscode-extension-tester";
 
 const BASELINE = 15_000;
 
@@ -14,6 +14,7 @@ const DEFAULT_TIMEOUT = {
 describe("Simple Webview UI Test", function () {
   this.timeout(60000);
   let driver: WebDriver;
+  let view: WebviewView;
   before(async function () {
     // const activityBar = new ActivityBar();
     // const viewControl = await activityBar.getViewControl("Test Ext Sidebar");
@@ -22,7 +23,6 @@ describe("Simple Webview UI Test", function () {
     // }
     // await viewControl.openView();
     driver = VSBrowser.instance.driver;
-    workbench = new Workbench();
     await driver.wait(
       async () => {
         const activityBar = new ActivityBar();
@@ -44,7 +44,7 @@ describe("Simple Webview UI Test", function () {
           view = new WebviewView();
           await view.switchToFrame();
           console.log('view HTML', await driver.getPageSource());
-          const elements = await driver.findElements(By.css('.app-container'));
+          const elements = await driver.findElements(By.css('#myForm'));
           return elements.length > 0;
         } catch (_) {
           return false;
